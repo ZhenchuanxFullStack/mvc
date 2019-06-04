@@ -379,3 +379,7 @@ html .clear-completed:active {
 #footer {
 	display: none;
 }
+
+.hide {
+  display: none;
+}
