@@ -25,13 +25,19 @@ jQuery(function ($) {
 			$('.toggle-all').on('change', this.toggleAll.bind(this));
 			$('.footer').on('click', '.clear-completed', this.destroyCompleted.bind(this));
 
-
 			this.todoTemplate = Handlebars.compile($('#todo-template').html());
 			this.footerTemplate = Handlebars.compile($('#footer-template').html());
-      this.render();
+
+      new Router({
+				'/:filter': function (filter) {
+					this.filter = filter;
+					this.render();
+				}.bind(this)
+			}).init('/all');
 		},
     render: function () {
-      $('.todo-list').html(this.todoTemplate(this.todos));
+      var todos = this.getFilteredTodos();
+      $('.todo-list').html(this.todoTemplate(todos));
       util.store('todos-jquery', this.todos);
 
       var todoCount = this.todos.length;
@@ -84,8 +90,9 @@ jQuery(function ($) {
       // ...
 		},
 		destroyCompleted: function () {
+      var self = this;
       this.todos.forEach(function(todo, i){
-        if (todo.completed) this.todos.splice(i, 1)
+        if (todo.completed) self.todos.splice(i, 1)
       })
       this.render();
 		},
@@ -126,39 +133,7 @@ jQuery(function ($) {
         this.render()
 			}
 		},
-		getActiveTodos: function () {
-			return this.todos.filter(function (todo) {
-				return !todo.completed;
-			});
-		},
 
-    /*
-
-
-
-
-
-		render: function () {
-			var todos = this.getFilteredTodos();
-			$('.todo-list').html(this.todoTemplate(todos));
-			$('.main').toggle(todos.length > 0);
-			$('.toggle-all').prop('checked', this.getActiveTodos().length === 0);
-			this.renderFooter();
-			$('.new-todo').focus();
-			util.store('todos-jquery', this.todos);
-		},
-		renderFooter: function () {
-			var todoCount = this.todos.length;
-			var activeTodoCount = this.getActiveTodos().length;
-			var template = this.footerTemplate({
-				activeTodoCount: activeTodoCount,
-				activeTodoWord: util.pluralize(activeTodoCount, 'item'),
-				completedTodos: todoCount - activeTodoCount,
-				filter: this.filter
-			});
-
-			$('.footer').toggle(todoCount > 0).html(template);
-		},
     // Filters
 		getCompletedTodos: function () {
 			return this.todos.filter(function (todo) {
@@ -176,7 +151,12 @@ jQuery(function ($) {
 
 			return this.todos;
 		},
-*/
+		getActiveTodos: function () {
+			return this.todos.filter(function (todo) {
+				return !todo.completed;
+			});
+		},
+
 		// accepts an element from inside the `.item` div and
 		// returns the corresponding index in the `todos` array
 		getIndexFromEl: function (el) {
